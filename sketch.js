@@ -10,6 +10,16 @@ let osc;
 let isOscillator = false;
 let audioStarted = false;
 let startButton;
+let touchPath = [];
+let isRecording = false;
+let isPlayingBack = false;
+let playbackIndex = 0;
+let maxRecordingTime = 2000;  // 最大記録時間 (5秒)
+let recordingStartTime = 0;
+let playbackInterval = 20;  // 再生間隔 (ミリ秒)
+let recordingToggleButton;
+let isRecordingEnabled = false;
+let clearButton;
 
 function preload() {
   whiteNoise = new p5.Noise(noiseType);
@@ -33,7 +43,8 @@ function setup() {
   noStroke();
 
   noiseDropdown = createSelect();
-  noiseDropdown.position(10, 100);
+  noiseDropdown.position(30, 20);  // ドロップダウンボタンの位置を上部に調整
+  noiseDropdown.style('height', '80px');  // 高さを少し大きく設定
   noiseDropdown.option('white');
   noiseDropdown.option('pink');
   noiseDropdown.option('brown');
@@ -55,6 +66,28 @@ function setup() {
   startButton.style('cursor', 'pointer');
   startButton.position(windowWidth / 2 - 150, windowHeight / 2 - 100);  // 中央に配置
   startButton.mousePressed(startAudio);  // ボタンを押すとAudioContextを起動する
+
+  recordingToggleButton = createButton('Rec');
+  recordingToggleButton.style('font-size', '45px');
+  recordingToggleButton.style('padding', '10px 20px');
+  recordingToggleButton.style('background-color', '#ff0000');
+  recordingToggleButton.style('color', '#fff');
+  recordingToggleButton.style('border', 'none');
+  recordingToggleButton.style('border-radius', '5px');
+  recordingToggleButton.style('height', '80px');  // ドロップダウンボタンの高さに揃える
+  recordingToggleButton.position(windowWidth - 350, 20);  // Recボタンを少し左に配置
+  recordingToggleButton.mousePressed(toggleRecording);
+
+  clearButton = createButton('Clear');
+  clearButton.style('font-size', '45px');
+  clearButton.style('padding', '10px 20px');
+  clearButton.style('background-color', '#808080');
+  clearButton.style('color', '#fff');
+  clearButton.style('border', 'none');
+  clearButton.style('border-radius', '5px');
+  clearButton.style('height', '80px');
+  clearButton.position(windowWidth - 180, 20);  // ClearボタンをRecボタンの右側に配置
+  clearButton.mousePressed(clearRecording);
 }
 
 function startAudio() {
@@ -107,7 +140,7 @@ function draw() {
   }
 
   fill(0, 255, 0);
-  ellipse(mouseX, mouseY, 20);
+  ellipse(mouseX, mouseY, width*0.05);
 
   textSize(45); // テキストサイズを大きく設定
   fill(255);
@@ -120,6 +153,88 @@ function draw() {
 
   filterRes = map(mouseX, 0, width, 0.5, 20);
   filterRes = constrain(filterRes, 0.5, 20);
+
+  if (isPlayingBack && touchPath.length > 0) {
+    if (playbackIndex < touchPath.length) {
+      let point = touchPath[playbackIndex];
+      filterFreq = point.freq;
+      mouseX = point.x;
+      mouseY = point.y;
+
+      playbackIndex++;
+    } else {
+      playbackIndex = 0;  // ループ再生
+    }
+  }
+}
+
+function mouseDragged() {
+  if (isRecording) {
+    let currentTime = millis() - recordingStartTime;
+    if (currentTime < maxRecordingTime) {
+      touchPath.push({
+        x: mouseX,
+        y: mouseY,
+        freq: filterFreq,
+        res: filterRes
+      });
+    } else {
+      stopRecording();
+      startPlayback();  // 録音が終わったら自動で再生を開始
+    }
+  }
+}
+
+function startRecording() {
+  touchPath = [];
+  isRecording = true;
+  isPlayingBack = false;
+  recordingStartTime = millis();
+  console.log('Recording started');
+}
+
+function stopRecording() {
+  isRecording = false;
+  isRecordingEnabled = false;  // 録音オンオフスイッチを自動でオフにする
+  recordingToggleButton.html('Rec');
+  recordingToggleButton.style('background-color', '#ff0000');
+  console.log('Recording stopped. Recorded ' + touchPath.length + ' points.');
+}
+
+function startPlayback() {
+  if (touchPath.length > 0) {
+    isPlayingBack = true;
+    playbackIndex = 0;
+    console.log('Playback started');
+  }
+}
+
+function mousePressed() {
+  if (isRecordingEnabled) {
+    touchPath = [];  // 既存の録音をクリアして上書きする
+    startRecording();
+  }
+}
+
+function toggleRecording() {
+  isRecordingEnabled = !isRecordingEnabled;
+
+  if (isRecordingEnabled) {
+    recordingToggleButton.html('Stop');
+    recordingToggleButton.style('background-color', '#00ff00');
+    startRecording();
+  } else {
+    recordingToggleButton.html('Rec');
+    recordingToggleButton.style('background-color', '#ff0000');
+    stopRecording();
+  }
+}
+
+function clearRecording() {
+  touchPath = [];
+  isPlayingBack = false;
+  playbackIndex = 0;
+  console.log('Recording cleared');
 }
 
 function changeNoiseType() {
