@@ -1,0 +1,30 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  overscroll-behavior: none;
+}
+
+canvas {
+  display: block;
+}
+
+.styled-select {
+    appearance: none;
+    background-color: #333;
+    color: rgb(0,255,0);
+    padding: 8px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+.styled-select:hover {
+    background-color: #444;
+  }
+  .styled-select:focus {
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+  }
+
