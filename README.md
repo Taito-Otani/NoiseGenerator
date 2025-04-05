@@ -7,7 +7,8 @@ This is a web-based noise generator for people who want to start playing noise m
 いつでもどこでもどんな時もノイズミュージックをはじめたい人のためのウェブベースのノイズジェネレーターです。
 
 
-![Uploading Screenshot 2025-04-05 at 17.43.28.png…]()
+<img width="1595" alt="Screenshot 2025-04-05 at 17 44 19" src="https://github.com/user-attachments/assets/80c815c4-867f-423f-b456-4f0e02145db1" />
+
 
 
 https://taito-otani.com/NoiseGenerator/
